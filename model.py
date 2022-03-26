@@ -42,7 +42,7 @@ class trainer():
     #MAIN algorithm which implements reinforcement learning
     def train_step(self, state, action, reward, new_state, game_over):
 
-        #convert the data to array format since we need it to work it with both since values and 
+        #convert the data to array format since we need it to work it with both single values and 
         state = torch.tensor(state, dtype=torch.float)
         action = torch.tensor(action, dtype=torch.float)
         reward = torch.tensor(reward, dtype=torch.float)

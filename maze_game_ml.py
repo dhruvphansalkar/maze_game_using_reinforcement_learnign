@@ -29,18 +29,6 @@ pygame.init()
 #get font to display info
 font = pygame.font.Font(None, 20)
 
-
-# reset function to restart the game after ending current game
-
-# reward 
-
-#play(action) -> direction
-
-#game_iteration
-
-#
-
-
 class maze_game:
 
     # constructor
@@ -53,7 +41,6 @@ class maze_game:
 
         #create clock to control the speed
         self.clock = pygame.time.Clock()
-
         self.restart()
 
     
@@ -80,15 +67,6 @@ class maze_game:
         for x_index in range(4) :
             self.fire_pits.append(Point(x_index*BLOCK_SIZE, y))
 
-
-        """y = BLOCK_SIZE * 15
-        for x_index in range(10, 25) :
-            self.fire_pits.append(Point(x_index*BLOCK_SIZE, y))"""
-
-        """x = BLOCK_SIZE * 20
-        for y_index in range(0, 9) :
-            self.fire_pits.append(Point(x, y_index*BLOCK_SIZE))"""
-
         x = BLOCK_SIZE * 8
         for y_index in range(5, 10) :
             self.fire_pits.append(Point(x, y_index*BLOCK_SIZE))
@@ -97,40 +75,39 @@ class maze_game:
     
     #randomly places treasure at the start of the game
     def place_treasure(self):
-        x = random.randint(0, (self.width-BLOCK_SIZE)//BLOCK_SIZE) * BLOCK_SIZE
-        y = random.randint(0, (self.height-BLOCK_SIZE)//BLOCK_SIZE) * BLOCK_SIZE
+        x = random.randint(0, 11) * BLOCK_SIZE
+        y = random.randint(0, 9) * BLOCK_SIZE
         self.treasure = Point(x,y)
+        
         if(self.treasure == self.protagonist or self.treasure in self.fire_pits) :
             self.place_treasure()
         
     # this is the main method controlling the functionality of the game
     def play_step(self, action):
-        # get input from user
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
 
         # move the character based on action   
         #1,0,0,0 - up
         #0,1,0,0, - right
         #0,0,1,0 - left
         #0,0,0,1 - down
+        x = self.protagonist.x
+        y = self.protagonist.y
         if np.array_equal(action, [1,0,0,0]):
-            self.move(DIRECTION.UP)
+            y -= BLOCK_SIZE
         elif np.array_equal(action, [0,1,0,0]):
-            self.move(DIRECTION.RIGHT)
+            x += BLOCK_SIZE
         elif np.array_equal(action, [0,0,1,0]):
-            self.move(DIRECTION.DOWN)
+            y += BLOCK_SIZE
         elif np.array_equal(action, [0,0,0,1]):
-            self.move(DIRECTION.LEFT)
+            x -= BLOCK_SIZE
+        self.protagonist = Point(x,y)
+        self.moves += 1
         
         #check if game over
         reward = 0
         game_over = False
 
         #this prevents a lot of steps being taken without reaching the reward
-        #TODO set moves to zero every time we get to the reward
         if self.collision() or self.moves > MAX_MOVES_WITHOUT_REWARD:
             reward = -10
             game_over = True
@@ -146,15 +123,19 @@ class maze_game:
 
         #update score and clock
         self.update()
-        self.clock.tick(30)
+        self.clock.tick(60)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
 
         # return game over
         return game_over, self.score, self.moves, reward
 
     #checks for collisions
     def collision(self, pt = None):
-        if pt is None:
-            pt = self.protagonist
+        pt = self.protagonist
         #check if it hits the boundry
         if pt.x > self.width - BLOCK_SIZE or pt.x < 0 or pt.y > self.height - BLOCK_SIZE or pt.y < 0:
             return True
@@ -163,31 +144,11 @@ class maze_game:
         if pt in self.fire_pits:
             return True
         return False
-    
-    # moves the protagonist based on user input
-    def move(self, direction):
-
-        x = self.protagonist.x
-        y = self.protagonist.y
-
-        if direction == DIRECTION.RIGHT:
-            x += BLOCK_SIZE
-        elif direction == DIRECTION.LEFT:
-            x -= BLOCK_SIZE
-        elif direction == DIRECTION.UP:
-            y -= BLOCK_SIZE
-        elif direction == DIRECTION.DOWN:
-            y += BLOCK_SIZE
-
-        self.protagonist = Point(x,y)
-        self.moves += 1
-
 
     # draws the protagonist at the new location at the begining after user input
     def update(self):
         # set the backround
         self.display.fill(BLACK)
-
         #draw the protagonist
         pygame.draw.rect(self.display, GREEN, pygame.Rect(self.protagonist.x, self.protagonist.y, BLOCK_SIZE, BLOCK_SIZE))
     
