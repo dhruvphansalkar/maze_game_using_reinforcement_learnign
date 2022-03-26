@@ -41,24 +41,63 @@ class Agent:
         """ 
 
         protagonist = game.protagonist
-        p_l = Point(protagonist.x - BLOCK_SIZE, protagonist.y)
-        p_r = Point(protagonist.x + BLOCK_SIZE, protagonist.y)
-        p_u = Point(protagonist.x, protagonist.y - BLOCK_SIZE)
-        p_d = Point(protagonist.x, protagonist.y + BLOCK_SIZE)
+
+
+        # this checks the position of the treasure with respect to the protagonist
+        if game.treasure.x < protagonist.x:
+            treasure_left = True
+        else:
+            treasure_left = False
+
+        if game.treasure.x > protagonist.x:
+            treasure_right = True
+        else:
+            treasure_right = False
+
+        if game.treasure.y < protagonist.y:
+            treasure_above = True
+        else:
+            treasure_above = False
+
+        if game.treasure.y > protagonist.y:
+            treasure_below = True
+        else:
+            treasure_below = False
+
+        # this checks if there are danger areas in the immidiate vicinity of the protagonist
+        if game.collision(Point(protagonist.x, protagonist.y - BLOCK_SIZE)):
+            danger_above = True
+        else:
+            danger_above = False
+
+        if game.collision(Point(protagonist.x + BLOCK_SIZE, protagonist.y)):
+            danger_right = True
+        else:
+            danger_right = False
+
+        if game.collision(Point(protagonist.x, protagonist.y + BLOCK_SIZE)):
+            danger_below = True
+        else:
+            danger_below = False
+
+        if game.collision(Point(protagonist.x - BLOCK_SIZE, protagonist.y)):
+            danger_Left = True
+        else:
+            danger_Left = False
 
         state = [
 
             # state of danger areas with respect to protagonist
-            game.collision(p_u),
-            game.collision(p_r),
-            game.collision(p_d),
-            game.collision(p_l),
+            danger_above,
+            danger_right,
+            danger_below,
+            danger_Left,
 
             #position of treasure with respect to the protagonist
-            game.treasure.x < protagonist.x,  #treasure to the left
-            game.treasure.x > protagonist.x,  #treasure to the right
-            game.treasure.y < protagonist.y,  #treasure above
-            game.treasure.y > protagonist.y   #treasure below
+            treasure_left,  #treasure to the left
+            treasure_right,  #treasure to the right
+            treasure_above,  #treasure above
+            treasure_below   #treasure below
 
         ]
 
@@ -134,14 +173,11 @@ def start_training():
     while True:
         
         state = agent.get_state(game)
-
         # decide action
         action = agent.get_action(state)
-
         #preform move
         game_over, score, no_of_moves, reward = game.play_step(action)
         new_state = agent.get_state(game)
-
         #train short memory
         agent.SM_train(state, action, reward, new_state, game_over)
 
