@@ -9,19 +9,21 @@ class Linear_QNet(nn.Module):
     # initializing a feed forward nueral network with 1 hidden layer
     # for our game the input depends on the state which has 8 parameter
     # the output depends on the no of actions which has 4 parameters
-    def __init__(self, input_size, hidden_size_1, hidden_size_2, output_size):
+    def __init__(self, nueron_tuple):
         super().__init__()
-        self.linear1 = nn.Linear(input_size, hidden_size_1)
-        self.linear2 = nn.Linear(hidden_size_1, output_size)
-        #self.linear3 = nn.Linear(hidden_size_2, output_size)
+
+        # fixed earlier problem caused due to using regular list to store layers
+        self.layers = nn.ModuleList()
+        for layer_index in range(len(nueron_tuple) - 1): #0, 1, 2
+            self.layers.append(nn.Linear(nueron_tuple[layer_index], nueron_tuple[layer_index + 1]))
 
     # implementation of the forwarding function for each nueron
-    def forward(self, input_for_input_layer):
-        # applying the activation funtion on input
-        activated_input_for_hidden_1 = F.relu(self.linear1(input_for_input_layer))
-        #activated_input_for_hidden_2 = F.relu(self.linear2(activated_input_for_hidden_1))
-        activated_input_for_output = self.linear2(activated_input_for_hidden_1)
-        return activated_input_for_output
+    def forward(self, input_for_layer):
+
+        for layer in self.layers[:-1]:
+            input_for_layer = F.relu(layer(input_for_layer))
+        output = self.layers[-1](input_for_layer)
+        return output
 
     def save(self, file='saved_model.pth'):
         torch.save(self.state_dict(), file)

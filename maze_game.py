@@ -50,15 +50,10 @@ class maze_game:
         #create clock to control the speed
         self.clock = pygame.time.Clock()
 
-        #initialize the game state
-        
         self.fire_pits = []
         self.create_firepits()
         
         self.protagonist = Point(self.width/2, self.height/2)
-
-        #recheck maybe unessary
-        #self.protagonist = [self.location, Point(self.location.x-BLOCK_SIZE, self.location.y), Point(self.location.x, self.location.y-BLOCK_SIZE)]
 
         self.moves = 0
         self.score = 0
@@ -75,15 +70,6 @@ class maze_game:
         y = BLOCK_SIZE * 3
         for x_index in range(4) :
             self.fire_pits.append(Point(x_index*BLOCK_SIZE, y))
-
-
-        """y = BLOCK_SIZE * 15
-        for x_index in range(10, 25) :
-            self.fire_pits.append(Point(x_index*BLOCK_SIZE, y))"""
-
-        """x = BLOCK_SIZE * 20
-        for y_index in range(0, 9) :
-            self.fire_pits.append(Point(x, y_index*BLOCK_SIZE))"""
 
         x = BLOCK_SIZE * 8
         for y_index in range(5, 10) :

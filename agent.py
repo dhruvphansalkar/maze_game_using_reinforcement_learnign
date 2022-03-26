@@ -26,7 +26,7 @@ class Agent:
         self.gamma = 0.8 # discount rate
         self.memory = deque(maxlen= MEMORY_SIZE)
 
-        self.model = Linear_QNet(8,128, 128, 4)
+        self.model = Linear_QNet((8, 128, 4,))
         self.trainer = trainer(self.model, learning_rate=LEARNING_RATE, gamma=self.gamma)
 
     
@@ -101,6 +101,7 @@ class Agent:
 
         ]
 
+        # this is the input of the 
         return np.array(state, dtype=int)
         
 
@@ -170,7 +171,8 @@ def start_training():
     agent = Agent()
     game = maze_game()
 
-    while True:
+    #1000 games will be played and the best model will be created
+    for i in range(1000):
         
         state = agent.get_state(game)
         # decide action
@@ -178,6 +180,7 @@ def start_training():
         #preform move
         game_over, score, no_of_moves, reward = game.play_step(action)
         new_state = agent.get_state(game)
+        
         #train short memory
         agent.SM_train(state, action, reward, new_state, game_over)
 
