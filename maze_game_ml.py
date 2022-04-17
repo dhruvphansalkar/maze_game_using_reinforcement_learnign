@@ -2,14 +2,7 @@ import os
 import pygame
 import random
 from collections import namedtuple
-from enum import Enum
 import numpy as np
-
-class DIRECTION(Enum):
-    RIGHT = 1
-    LEFT = 2
-    UP = 3
-    DOWN = 4
 
 #named tuple to represent location
 Point = namedtuple('Point', 'x, y')

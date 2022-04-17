@@ -13,9 +13,9 @@ from collections import deque
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
-MEMORY_SIZE = 100000
+MEMORY_SIZE = 1000
 BATCH_SIZE = 100
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.001
 RANDOM_GAME_THRESHOLD = 200
 
 class Agent:
@@ -26,8 +26,8 @@ class Agent:
         self.gamma = 0.8 # discount rate
         self.memory = deque(maxlen= MEMORY_SIZE)
 
-        self.model = NeuralNetwork()
-        self.trainer = trainer(self.model, learning_rate=LEARNING_RATE, gamma=self.gamma)
+        self.model = NeuralNetwork(lr= LEARNING_RATE)
+        self.trainer = trainer(self.model, gamma=self.gamma)
 
     
     def get_state(self, game: maze_game):
@@ -41,8 +41,6 @@ class Agent:
         """ 
 
         protagonist = game.protagonist
-
-
         # this checks the position of the treasure with respect to the protagonist
         if game.treasure.x < protagonist.x:
             treasure_left = True
@@ -130,13 +128,9 @@ class Agent:
             state, action, reward, new_state, game_over = sample[i]
             self.trainer.train_step(state, action, reward, new_state, game_over)
 
-        
-
-
-
     def SM_train(self, state, action, reward, new_state, game_over):
         """
-         trains with all the past states and actions
+         trains with the last states and action
         """
         self.trainer.train_step(state, action, reward, new_state, game_over)
 
@@ -155,7 +149,8 @@ class Agent:
         else:
             temp = np.expand_dims(state, axis=0)
             model_action = self.model.forward_prop(temp)
-            action[np.argmax(model_action).item()] = 1
+            index = np.argmax(model_action).item()
+            action[index] = 1
         return action
 
 
@@ -163,9 +158,7 @@ class Agent:
 def start_training():
     scores = []
     avg_scores = []
-    total_scores = []
     total_score = 0
-    record = 0
     agent = Agent()
     game = maze_game()
 
@@ -190,11 +183,6 @@ def start_training():
             game.restart()
             agent.no_of_games += 1
             agent.LM_train()
-
-            # can be removed if not required
-            if score > record:
-                record = score
-                #agent.model.save()
 
             scores.append(score)
             total_score += score
