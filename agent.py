@@ -14,7 +14,7 @@ import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 MEMORY_SIZE = 100000
-BATCH_SIZE = 1000
+BATCH_SIZE = 100
 LEARNING_RATE = 0.01
 RANDOM_GAME_THRESHOLD = 200
 
@@ -127,9 +127,10 @@ class Agent:
 
         #states, actions, rewards, new_states, game_overs = zip(*sample)
         for i in range(len(sample)):
-            states, actions, rewards, new_states, game_overs = sample[i]
+            state, action, reward, new_state, game_over = sample[i]
+            self.trainer.train_step(state, action, reward, new_state, game_over)
 
-        self.trainer.train_step(states, actions, rewards, new_states, game_overs)
+        
 
 
 
@@ -188,7 +189,7 @@ def start_training():
         if game_over:
             game.restart()
             agent.no_of_games += 1
-            #agent.LM_train()
+            agent.LM_train()
 
             # can be removed if not required
             if score > record:

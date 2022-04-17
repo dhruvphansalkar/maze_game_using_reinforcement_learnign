@@ -46,10 +46,8 @@ class NeuralNetwork:
         else:
             return 1 - self.htan(x, derivative=False) * self.htan(x, derivative=False)
 
-
     def softmax(self, x):
-        A = np.exp(x) / sum(np.exp(x))
-        return A
+        return np.exp(x) / sum(np.exp(x))
 
     def forward_prop(self, input):
         self.inputs = input
