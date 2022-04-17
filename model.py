@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn #implement later yourself
 import torch.optim as optim
 import torch.nn.functional as F
+import numpy as np
 
 # our class impements the base class of all nerural netword module
 class Linear_QNet(nn.Module):
@@ -19,7 +20,6 @@ class Linear_QNet(nn.Module):
 
     # implementation of the forwarding function for each nueron
     def forward(self, input_for_layer):
-
         for layer in self.layers[:-1]:
             input_for_layer = F.relu(layer(input_for_layer))
         output = self.layers[-1](input_for_layer)
@@ -34,14 +34,12 @@ class trainer():
         self.learning_rate  = learning_rate
         self.gamma = gamma
         self.model = model
-        self.optimizer = optim.Adam(model.parameters(), lr=self.learning_rate)
+        self.optimizer = optim.SGD(model.parameters(), lr=self.learning_rate)
+        #self.optimizer = optim.Adam(model.parameters(), lr=self.learning_rate)
         self.loss_function = nn.MSELoss()
-
-
 
     #MAIN algorithm which implements reinforcement learning
     def train_step(self, state, action, reward, new_state, game_over):
-
         #convert the data to array format since we need it to work it with both single values and 
         state = torch.tensor(state, dtype=torch.float)
         action = torch.tensor(action, dtype=torch.float)
@@ -59,37 +57,30 @@ class trainer():
             game_over = (game_over, )
 
         #Update rule implementation using bellman's equation
-
         #predicted Q value with current state
-        predition = self.model(state)
+        prediction = self.model(state)
 
-        prediction_clone = predition.clone()
+        prediction_clone = prediction.clone()
 
         for i in range(len(state)):
             q_new = reward[i]
             if not game_over[i]:
+                #new q value = r + gamma * max(next_predicted Q val) - bellman equation
                 q_new = reward[i] + (self.gamma * torch.max(self.model(new_state[i])))
 
-            #TODO understand this logic
+            a = torch.argmax(action)
+            a = torch.argmax(action).item()
             prediction_clone[i][torch.argmax(action).item()] = q_new
         
-        
-        # TODO empties the gradients????
+
         self.optimizer.zero_grad()
 
         #difined the error as the squared difference between the new and the old q values
-        loss = self.loss_function(prediction_clone, predition)
-        
+        loss = self.loss_function(prediction_clone, prediction)
+
         #applies the backpropogation to update the weights
         loss.backward()
-
-
         self.optimizer.step()
-
-        #new q value = r + gamma * max(next_predicted Q val)
-
-
-        #
 
 
 

@@ -26,7 +26,7 @@ class Agent:
         self.gamma = 0.8 # discount rate
         self.memory = deque(maxlen= MEMORY_SIZE)
 
-        self.model = Linear_QNet((8, 128, 4,))
+        self.model = Linear_QNet((8, 256, 4,))
         self.trainer = trainer(self.model, learning_rate=LEARNING_RATE, gamma=self.gamma)
 
     
@@ -86,13 +86,11 @@ class Agent:
             danger_Left = False
 
         state = [
-
             # state of danger areas with respect to protagonist
             danger_above,
             danger_right,
             danger_below,
             danger_Left,
-
             #position of treasure with respect to the protagonist
             treasure_left,  #treasure to the left
             treasure_right,  #treasure to the right
@@ -127,7 +125,10 @@ class Agent:
         else:
             sample = self.memory
 
-        states, actions, rewards, new_states, game_overs = zip(*sample)
+        #states, actions, rewards, new_states, game_overs = zip(*sample)
+        for i in range(len(sample)):
+            states, actions, rewards, new_states, game_overs = sample[i]
+
         self.trainer.train_step(states, actions, rewards, new_states, game_overs)
 
 
@@ -142,22 +143,18 @@ class Agent:
         """
         gets the action to be performed by the protagonist
         """
-        # first we do some random moves - exploration v exploitation
-        # the more games we play -> chances of random action decreases
-        # inccrease RANDOM_GAME_THRESHOLD if model is not getting sufficiently trained in those number of games
-        self.random_action_flag = RANDOM_GAME_THRESHOLD - self.no_of_games
         action = [0,0,0,0]
 
-        #when no of games exceeds 50 -> 0 chance of random action
+        #when no of games exceeds RANDOM_GAME_THRESHOLD -> 0 chance of random action
+        # first we do some random moves - exploration v exploitation
+        # the more games we play -> chances of random action decreases
         randomVal = random.randint(0,100)
-        if randomVal < self.random_action_flag:
-            index = random.randint(0,3)
-            action[index] = 1
+        if randomVal < RANDOM_GAME_THRESHOLD - self.no_of_games:
+            action[random.randint(0,3)] = 1
         else:
             temp = torch.tensor(state, dtype=torch.float)
             model_action = self.model(temp)
-            index = torch.argmax(model_action).item()
-            action[index] = 1
+            action[torch.argmax(model_action).item()] = 1
         return action
 
 
@@ -171,8 +168,8 @@ def start_training():
     agent = Agent()
     game = maze_game()
 
-    #1000 games will be played and the best model will be created
-    for i in range(1000):
+    #10000 games will be played and the best model will be created
+    while(agent.no_of_games <= 1000):
         
         state = agent.get_state(game)
         # decide action
@@ -191,7 +188,7 @@ def start_training():
         if game_over:
             game.restart()
             agent.no_of_games += 1
-            agent.LM_train()
+            #agent.LM_train()
 
             # can be removed if not required
             if score > record:
@@ -202,10 +199,6 @@ def start_training():
             total_score += score
             avg_scores.append(total_score/agent.no_of_games)
             plot(scores, avg_scores)
-
-
-
-    
 
 if __name__ == '__main__':
     start_training()
