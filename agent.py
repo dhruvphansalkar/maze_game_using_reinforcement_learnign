@@ -14,7 +14,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 MEMORY_SIZE = 1000
 BATCH_SIZE = 100
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.00025
 RANDOM_GAME_THRESHOLD = 200
 
 class Agent:
@@ -25,7 +25,7 @@ class Agent:
         self.gamma = 0.8 # discount rate
         self.memory = deque(maxlen= MEMORY_SIZE)
 
-        self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=256)
+        self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=256, activation='relu')
         self.trainer = trainer(self.model, gamma=self.gamma)
 
     
@@ -143,11 +143,10 @@ def start_training():
     scores = []
     avg_scores = []
     total_score = 0
-    agent = Agent()
-    game = maze_game()
+    max_score = 0
 
     #10000 games will be played and the best model will be created
-    while(agent.no_of_games <= 1000):
+    while(agent.no_of_games <= 500):
         
         state = agent.get_state(game)
         # decide action
@@ -155,7 +154,6 @@ def start_training():
         #preform move
         game_over, score, no_of_moves, reward = game.play_step(action)
         new_state = agent.get_state(game)
-        
         #train with state and store result in memory
         agent.train_and_store(state, action, reward, new_state, game_over)
 
@@ -165,10 +163,45 @@ def start_training():
             agent.no_of_games += 1
             agent.LM_train()
 
+            if score >= max_score:
+                max_score = score
+                # saving the model which gets us the best performance
+                w1 = agent.model.w1.copy()
+                w2 = agent.model.w2.copy()
+                b1 = agent.model.b1.copy()
+                b2 = agent.model.b2.copy()
+
+            scores.append(score)
+            total_score += score
+
+            avg_scores.append(total_score/agent.no_of_games)
+            plot(scores, avg_scores, 'AI TRAINING')
+    
+    agent.model.w1 = w1
+    agent.model.w2 = w2
+    agent.model.b1 = b1
+    agent.model.b2 = b2
+
+def start_test():
+    scores = []
+    avg_scores = []
+    total_score = 0
+    while(agent.no_of_games <= 1000):
+        state = agent.get_state(game)
+        action = agent.get_action(state)
+        game_over, score, _, _ = game.play_step(action)
+        if game_over:
+            game.restart()
+            agent.no_of_games += 1
+
             scores.append(score)
             total_score += score
             avg_scores.append(total_score/agent.no_of_games)
-            plot(scores, avg_scores)
+            plot(scores, [], 'AI Playing Using Fixed Model')
+    print(avg_scores[-1])
 
 if __name__ == '__main__':
+    agent = Agent()
+    game = maze_game()
     start_training()
+    start_test()
