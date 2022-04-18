@@ -55,7 +55,7 @@ class NeuralNetwork:
         self.z1 = self.w1.dot(self.inputs) + self.b1
         self.a1 = self.activation(self.z1)
         self.z2 = self.w2.dot(self.a1) + self.b2
-        self.a2 = self.activation(self.z2)
+        self.a2 = self.softmax(self.z2)
         return self.a2
 
     def forward_prop_1(self, input):
@@ -67,6 +67,8 @@ class NeuralNetwork:
         return a2
 
     def back_prop(self, expected_op, output):
+
+        #calculate gradients
         m = expected_op.size
         dz2 = expected_op - output
         dw2 = 1/m * dz2.dot(self.a1.T)
@@ -74,11 +76,11 @@ class NeuralNetwork:
         dz1 = self.w2.T.dot(dz2) * self.activation(self.z1, derivative=True)
         dw1 = 1 / m * dz1.dot(self.inputs.T)
         db1 = 1 / m * np.sum(dz1)
-        self.update_params(dw1, db1, dw2, db2)
-        
-    def update_params(self, dw1, db1, dw2, db2):
-        self.w1 = self.w1 + self.lr * dw1
-        self.b1 = self.b1 + self.lr * db1    
-        self.w2 = self.w2 + self.lr * dw2  
-        self.b2 = self.b2 + self.lr * db2    
+
+        #updating weights
+        self.w1 += self.lr * dw1
+        self.b1 += self.lr * db1    
+        self.w2 += self.lr * dw2  
+        self.b2 += self.lr * db2
+            
         

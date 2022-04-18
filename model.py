@@ -12,7 +12,6 @@ class trainer():
         
         state = np.expand_dims(state, axis=0)
         action = np.expand_dims(np.array(action), axis=0)
-        #reward = torch.tensor(reward, dtype=torch.float)
         new_state = np.expand_dims(new_state, axis=0)
         
         #predicted Q value with current state
@@ -20,14 +19,15 @@ class trainer():
         print(prediction)
 
         prediction_clone = prediction.copy()
-
-        #for i in range(len(state)):
+        
         q_new = reward
         if not game_over:
         #new q value = r + gamma * max(next_predicted Q val) - bellman equation
-            q_new = reward + (self.gamma * np.max(self.model.forward_prop_1(new_state)))
+            max_future_q_value = np.max(self.model.forward_prop_1(new_state))
+            q_new = reward + (self.gamma * max_future_q_value)
 
-        prediction_clone[np.argmax(action).item()] = q_new
+        index = np.argmax(action).item()
+        prediction_clone[index] = q_new
         
         # back propogation and weight updation
         self.model.back_prop(prediction_clone, prediction)

@@ -6,7 +6,6 @@ from plotter import plot
 from NueralNetwork import NeuralNetwork
 
 
-# can also be done using lists
 from collections import deque
 
 
@@ -26,7 +25,7 @@ class Agent:
         self.gamma = 0.8 # discount rate
         self.memory = deque(maxlen= MEMORY_SIZE)
 
-        self.model = NeuralNetwork(lr= LEARNING_RATE)
+        self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=256)
         self.trainer = trainer(self.model, gamma=self.gamma)
 
     
@@ -122,8 +121,6 @@ class Agent:
             sample = random.sample(self.memory, BATCH_SIZE)
         else:
             sample = self.memory
-
-        #states, actions, rewards, new_states, game_overs = zip(*sample)
         for i in range(len(sample)):
             state, action, reward, new_state, game_over = sample[i]
             self.trainer.train_step(state, action, reward, new_state, game_over)
