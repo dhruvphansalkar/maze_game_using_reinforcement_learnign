@@ -98,20 +98,6 @@ class Agent:
 
         # this is the input of the 
         return np.array(state, dtype=int)
-        
-
-
-    def store_in_memory(self, state, action, reward, new_state, game_over):
-        """
-        stores the action performed in deque memory
-        if MEMORY becomes full it automatically pops the oldest value
-        :param state: state before the action was performed
-        :param action: action that was performed based on current state
-        :param reward: reward associated with the action
-        :param new_state: state after performing the action
-        :game_over: protagonist dead
-        """ 
-        self.memory.append((state, action, reward, new_state, game_over))
 
     def LM_train(self):
         """
@@ -125,11 +111,12 @@ class Agent:
             state, action, reward, new_state, game_over = sample[i]
             self.trainer.train_step(state, action, reward, new_state, game_over)
 
-    def SM_train(self, state, action, reward, new_state, game_over):
+    def train_and_store(self, state, action, reward, new_state, game_over):
         """
-         trains with the last states and action
+         trains with the last states and action and stores result for LM_train
         """
         self.trainer.train_step(state, action, reward, new_state, game_over)
+        self.memory.append((state, action, reward, new_state, game_over))
 
     def get_action(self, state):
         """
@@ -169,11 +156,8 @@ def start_training():
         game_over, score, no_of_moves, reward = game.play_step(action)
         new_state = agent.get_state(game)
         
-        #train short memory
-        agent.SM_train(state, action, reward, new_state, game_over)
-
-        #strore in memory
-        agent.store_in_memory(state, action, reward, new_state, game_over)
+        #train with state and store result in memory
+        agent.train_and_store(state, action, reward, new_state, game_over)
 
         #if game is over train long memory, ie trains again on all the moves and games it has played before
         if game_over:
