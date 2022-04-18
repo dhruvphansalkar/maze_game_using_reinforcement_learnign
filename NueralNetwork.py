@@ -1,8 +1,7 @@
 import numpy as np
-# transposing -> p = p.T
 
 class NeuralNetwork:
-    def __init__(self, hidden_neuron = 128, activation='tanh', lr = 0.001):
+    def __init__(self, hidden_neuron = 128, activation='tanh', lr = 0.0001):
         
         self.hidden_neuron = hidden_neuron
         self.lr = lr

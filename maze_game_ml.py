@@ -1,8 +1,8 @@
-import os
 import pygame
 import random
 from collections import namedtuple
 import numpy as np
+import os
 
 #named tuple to represent location
 Point = namedtuple('Point', 'x, y')
@@ -21,6 +21,15 @@ pygame.init()
 
 #get font to display info
 font = pygame.font.Font(None, 20)
+
+mario = pygame.image.load(os.path.join('mario.png'))
+mario = pygame.transform.scale(mario, (BLOCK_SIZE, BLOCK_SIZE))
+
+fire = pygame.image.load(os.path.join('fire.png'))
+fire = pygame.transform.scale(fire, (BLOCK_SIZE, BLOCK_SIZE))
+
+treasure = pygame.image.load(os.path.join('treasure.png'))
+treasure = pygame.transform.scale(treasure, (BLOCK_SIZE, BLOCK_SIZE))
 
 class maze_game:
 
@@ -143,15 +152,15 @@ class maze_game:
         # set the backround
         self.display.fill(BLACK)
         #draw the protagonist
-        pygame.draw.rect(self.display, GREEN, pygame.Rect(self.protagonist.x, self.protagonist.y, BLOCK_SIZE, BLOCK_SIZE))
-    
+        #pygame.draw.rect(self.display, GREEN, pygame.Rect(self.protagonist.x, self.protagonist.y, BLOCK_SIZE, BLOCK_SIZE))
+        self.display.blit(mario, (self.protagonist.x,self.protagonist.y))
         #draw treasure
-        pygame.draw.rect(self.display, BLUE, pygame.Rect(self.treasure.x, self.treasure.y, BLOCK_SIZE, BLOCK_SIZE))
-
+        #pygame.draw.rect(self.display, BLUE, pygame.Rect(self.treasure.x, self.treasure.y, BLOCK_SIZE, BLOCK_SIZE))
+        self.display.blit(treasure, (self.treasure.x, self.treasure.y))
         #draw firepits
         for point in self.fire_pits:
-            pygame.draw.rect(self.display, RED, pygame.Rect(point.x, point.y, BLOCK_SIZE, BLOCK_SIZE))
-
+            #pygame.draw.rect(self.display, RED, pygame.Rect(point.x, point.y, BLOCK_SIZE, BLOCK_SIZE))
+            self.display.blit(fire, (point.x, point.y))
         #display information
         text = font.render('Moves: ' + str(self.moves) + ' Score: ' + str(self.score), True, WHITE)
         self.display.blit(text, [0,0])
