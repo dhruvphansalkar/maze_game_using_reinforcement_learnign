@@ -14,7 +14,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 MEMORY_SIZE = 1000
 BATCH_SIZE = 100
-LEARNING_RATE = 0.00025
+LEARNING_RATE = 0.001
 RANDOM_GAME_THRESHOLD = 200
 
 class Agent:
@@ -41,45 +41,45 @@ class Agent:
         protagonist = game.protagonist
         # this checks the position of the treasure with respect to the protagonist
         if game.treasure.x < protagonist.x:
-            treasure_left = True
+            treasure_left = 1
         else:
-            treasure_left = False
+            treasure_left = 0
 
         if game.treasure.x > protagonist.x:
-            treasure_right = True
+            treasure_right = 1
         else:
-            treasure_right = False
+            treasure_right = 0
 
         if game.treasure.y < protagonist.y:
-            treasure_above = True
+            treasure_above = 1
         else:
-            treasure_above = False
+            treasure_above = 0
 
         if game.treasure.y > protagonist.y:
-            treasure_below = True
+            treasure_below = 1
         else:
-            treasure_below = False
+            treasure_below = 0
 
         # this checks if there are danger areas in the immidiate vicinity of the protagonist
         if game.collision(Point(protagonist.x, protagonist.y - BLOCK_SIZE)):
-            danger_above = True
+            danger_above = 1
         else:
-            danger_above = False
+            danger_above = 0
 
         if game.collision(Point(protagonist.x + BLOCK_SIZE, protagonist.y)):
-            danger_right = True
+            danger_right = 1
         else:
-            danger_right = False
+            danger_right = 0
 
         if game.collision(Point(protagonist.x, protagonist.y + BLOCK_SIZE)):
-            danger_below = True
+            danger_below = 1
         else:
-            danger_below = False
+            danger_below = 0
 
         if game.collision(Point(protagonist.x - BLOCK_SIZE, protagonist.y)):
-            danger_Left = True
+            danger_Left = 1
         else:
-            danger_Left = False
+            danger_Left = 0
 
         state = [
             # state of danger areas with respect to protagonist
@@ -96,7 +96,7 @@ class Agent:
         ]
 
         # this is the input of the 
-        return np.array(state, dtype=int)
+        return np.array(state)
 
     def LM_train(self):
         """
@@ -128,8 +128,7 @@ class Agent:
         #when no of games exceeds RANDOM_GAME_THRESHOLD -> 0 chance of random action
         # first we do some random moves - exploration v exploitation
         # the more games we play -> chances of random action decreases
-        randomVal = random.randint(0,100)
-        if randomVal < RANDOM_GAME_THRESHOLD - self.no_of_games:
+        if random.randint(0,100) < RANDOM_GAME_THRESHOLD - self.no_of_games:
             action[random.randint(0,3)] = 1
         else:
             model_action = self.model.forward_prop(np.expand_dims(state, axis=0))
