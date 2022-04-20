@@ -20,11 +20,11 @@ RANDOM_GAME_THRESHOLD = 200
 class Agent:
 
     def __init__(self) -> None:
-        self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=256, activation='relu')
+        self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=256, activation='tanh')
         self.no_of_games = 0
         self.random_action_flag = 0 # controls the random behaviour
         self.gamma = 0.8 # discount rate
-        self.memory = deque(maxlen= MEMORY_SIZE)
+        self.memory = deque()
         self.trainer = trainer(self.model, gamma=self.gamma)
 
     
@@ -115,6 +115,8 @@ class Agent:
          trains with the last states and action and stores result for LM_train
         """
         self.trainer.train_step(state, action, reward, new_state, game_over)
+        if len(self.memory) > MEMORY_SIZE:
+            self.memory.popleft()
         self.memory.append((state, action, reward, new_state, game_over))
 
     def get_action(self, state):
@@ -181,7 +183,6 @@ def start_training():
 
 def start_test():
     scores = []
-    avg_scores = []
     total_score = 0
     while(agent.no_of_games <= 1000):
         state = agent.get_state(game)
@@ -193,9 +194,8 @@ def start_test():
 
             scores.append(score)
             total_score += score
-            avg_scores.append(total_score/agent.no_of_games)
             plot(scores, [], 'AI Playing Using Fixed Model')
-    print(avg_scores[-1])
+    print(total_score/500)
 
 if __name__ == '__main__':
     agent = Agent()
