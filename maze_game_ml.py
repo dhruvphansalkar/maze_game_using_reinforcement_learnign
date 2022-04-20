@@ -9,12 +9,6 @@ Point = namedtuple('Point', 'x, y')
 
 BLOCK_SIZE = 20
 
-RED = (255,0,0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-WHITE = (255, 255, 255)
-BLACK = (0,0,0)
-
 MAX_MOVES_WITHOUT_REWARD = 100;
 
 pygame.init()
@@ -77,9 +71,7 @@ class maze_game:
     
     #randomly places treasure at the start of the game
     def place_treasure(self):
-        x = random.randint(0, 11) * BLOCK_SIZE
-        y = random.randint(0, 9) * BLOCK_SIZE
-        self.treasure = Point(x,y)
+        self.treasure = Point(random.randint(0, 11) * BLOCK_SIZE,random.randint(0, 9) * BLOCK_SIZE)
         
         if(self.treasure == self.protagonist or self.treasure in self.fire_pits) :
             self.place_treasure()
@@ -150,7 +142,7 @@ class maze_game:
     # draws the protagonist at the new location at the begining after user input
     def update(self):
         # set the backround
-        self.display.fill(BLACK)
+        self.display.fill((0,0,0))
         #draw the protagonist
         #pygame.draw.rect(self.display, GREEN, pygame.Rect(self.protagonist.x, self.protagonist.y, BLOCK_SIZE, BLOCK_SIZE))
         self.display.blit(mario, (self.protagonist.x,self.protagonist.y))
@@ -162,7 +154,7 @@ class maze_game:
             #pygame.draw.rect(self.display, RED, pygame.Rect(point.x, point.y, BLOCK_SIZE, BLOCK_SIZE))
             self.display.blit(fire, (point.x, point.y))
         #display information
-        text = font.render('Moves: ' + str(self.moves) + ' Score: ' + str(self.score), True, WHITE)
+        text = font.render('Moves: ' + str(self.moves) + ' Score: ' + str(self.score), True, (255,255,255))
         self.display.blit(text, [0,0])
 
         # visually updates the changes
