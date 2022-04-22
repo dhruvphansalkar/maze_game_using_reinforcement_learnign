@@ -3,7 +3,7 @@ import numpy as np
 from maze_game_ml import maze_game, Point, BLOCK
 from plotter import plot
 from NueralNetwork import NeuralNetwork
-
+from NeuralNetwork2 import NeuralNetwork2
 
 from collections import deque
 
@@ -13,14 +13,15 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 MEMORY_SIZE = 1000
 BATCH_SIZE = 100
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.01
 RANDOM_GAME_THRESHOLD = 200
 TRAINING_THRESHOLD = 0 # incease this if training is set 
 
 class Agent:
 
     def __init__(self) -> None:
-        self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=256, activation='tanh')
+        #self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=256, activation='tanh')
+        self.model = NeuralNetwork2(lr= LEARNING_RATE, hidden_neuron=[256,128], activation='tanh')
         self.no_of_games = 0
         self.random_action_flag = 0 # controls the random behaviour
         self.gamma = 0.8 # discount rate
@@ -181,10 +182,16 @@ def start_training():
     while(agent.no_of_games <= 500):
         
         state = agent.get_state(game)
+        print(state)
         # decide action
         action = agent.get_action(state)
+        print(action)
         #preform move
-        game_over, score, no_of_moves, reward = game.play_step(action)
+        game_output = game.play_step(action)
+        game_over = game_output[0]
+        score = game_output[1]
+        no_of_moves = game_output[2]
+        reward = game_output[3]
         
         new_state = agent.get_state(game)
         #train with state and store result in memory
