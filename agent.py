@@ -1,7 +1,6 @@
 import random
 import numpy as np
-from maze_game_ml import maze_game, Point, BLOCK_SIZE
-from model import trainer
+from maze_game_ml import maze_game, Point, BLOCK
 from plotter import plot
 from NueralNetwork import NeuralNetwork
 
@@ -16,6 +15,7 @@ MEMORY_SIZE = 1000
 BATCH_SIZE = 100
 LEARNING_RATE = 0.001
 RANDOM_GAME_THRESHOLD = 200
+TRAINING_THRESHOLD = 0 # incease this if training is set 
 
 class Agent:
 
@@ -61,22 +61,22 @@ class Agent:
             treasure_below = 0
 
         # this checks if there are danger areas in the immidiate vicinity of the protagonist
-        if game.collision(Point(protagonist.x, protagonist.y - BLOCK_SIZE)):
+        if game.collision(Point(protagonist.x, protagonist.y - BLOCK)):
             danger_above = 1
         else:
             danger_above = 0
 
-        if game.collision(Point(protagonist.x + BLOCK_SIZE, protagonist.y)):
+        if game.collision(Point(protagonist.x + BLOCK, protagonist.y)):
             danger_right = 1
         else:
             danger_right = 0
 
-        if game.collision(Point(protagonist.x, protagonist.y + BLOCK_SIZE)):
+        if game.collision(Point(protagonist.x, protagonist.y + BLOCK)):
             danger_below = 1
         else:
             danger_below = 0
 
-        if game.collision(Point(protagonist.x - BLOCK_SIZE, protagonist.y)):
+        if game.collision(Point(protagonist.x - BLOCK, protagonist.y)):
             danger_Left = 1
         else:
             danger_Left = 0
@@ -108,13 +108,13 @@ class Agent:
             sample = random.sample(self.memory, BATCH_SIZE)
         for i in range(len(sample)):
             state, action, reward, new_state, game_over = sample[i]
-            self.trainer.train_step(state, action, reward, new_state, game_over)
+            self.trainer.training(state, action, reward, new_state, game_over)
 
     def train_and_store(self, state, action, reward, new_state, game_over):
         """
          trains with the last states and action and stores result for LM_train
         """
-        self.trainer.train_step(state, action, reward, new_state, game_over)
+        self.trainer.training(state, action, reward, new_state, game_over)
         if len(self.memory) > MEMORY_SIZE:
             self.memory.popleft()
         self.memory.append((state, action, reward, new_state, game_over))
@@ -136,6 +136,40 @@ class Agent:
         return action
 
 
+class trainer():
+    def __init__(self, model: NeuralNetwork, gamma) -> None:
+        self.gamma = gamma
+        self.model = model
+        self.error = None
+        self.a = []
+    #MAIN algorithm which implements reinforcement learning
+    def training(self, state, action, reward, new_state, game_over):
+        
+        #convert the data to array format since we need it to work it with single values
+        state = np.expand_dims(state, axis=0)
+        action = np.expand_dims(np.array(action), axis=0)
+        new_state = np.expand_dims(new_state, axis=0)
+        
+        #predicted Q value with current state
+        prediction = self.model.forward_prop(state)
+        print(prediction)
+        #modify it to get target value
+        prediction_clone = prediction.copy()
+
+        if game_over:
+            q_new = reward
+        else:
+            #new q value = r + gamma * max(next_predicted Q val) - bellman equation
+            max_future_q_value = np.max(self.model.forward_prop_1(new_state))
+            q_new = reward + (self.gamma * max_future_q_value)
+
+        index = np.argmax(action).item()
+        prediction_clone[index] = q_new
+        
+        # back propogation and weight updation
+        self.model.back_prop(prediction_clone, prediction)
+
+
 
 def start_training():
     scores = []
@@ -151,6 +185,7 @@ def start_training():
         action = agent.get_action(state)
         #preform move
         game_over, score, no_of_moves, reward = game.play_step(action)
+        
         new_state = agent.get_state(game)
         #train with state and store result in memory
         agent.train_and_store(state, action, reward, new_state, game_over)
@@ -158,10 +193,10 @@ def start_training():
         #if game is over train long memory, ie trains again on all the moves and games it has played before
         if game_over:
             game.restart()
-            agent.no_of_games += 1
+            agent.no_of_games = agent.no_of_games + 1
             agent.LM_train()
 
-            if score >= max_score:
+            if score >= max_score and agent.no_of_games > TRAINING_THRESHOLD:
                 max_score = score
                 # saving the model which gets us the best performance
                 w1 = agent.model.w1.copy()

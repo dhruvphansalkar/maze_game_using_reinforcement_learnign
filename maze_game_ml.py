@@ -7,9 +7,11 @@ import os
 #named tuple to represent location
 Point = namedtuple('Point', 'x, y')
 
-BLOCK_SIZE = 20
+BLOCK = 20
 
 MAX_MOVES_WITHOUT_REWARD = 100;
+
+SPEED = 60 #reduce to make slower
 
 pygame.init()
 
@@ -17,20 +19,20 @@ pygame.init()
 font = pygame.font.Font(None, 20)
 
 mario = pygame.image.load(os.path.join('mario.png'))
-mario = pygame.transform.scale(mario, (BLOCK_SIZE, BLOCK_SIZE))
+mario = pygame.transform.scale(mario, (BLOCK, BLOCK))
 
 fire = pygame.image.load(os.path.join('fire.png'))
-fire = pygame.transform.scale(fire, (BLOCK_SIZE, BLOCK_SIZE))
+fire = pygame.transform.scale(fire, (BLOCK, BLOCK))
 
 treasure = pygame.image.load(os.path.join('treasure.png'))
-treasure = pygame.transform.scale(treasure, (BLOCK_SIZE, BLOCK_SIZE))
+treasure = pygame.transform.scale(treasure, (BLOCK, BLOCK))
 
 class maze_game:
 
     # constructor
-    def __init__(self, width = 240, height = 200) -> None:
-        self.width = width
-        self.height = height
+    def __init__(self) -> None:
+        self.width = 240
+        self.height = 200
 
         #create the screen
         self.display = pygame.display.set_mode((self.width, self.height))
@@ -53,25 +55,24 @@ class maze_game:
 
         self.treasure = None
         self.place_treasure()
-        self.iteration = 0
 
 
     #create firepits
     def create_firepits(self):
 
-        y = BLOCK_SIZE * 3
+        y = BLOCK * 3
         for x_index in range(4) :
-            self.fire_pits.append(Point(x_index*BLOCK_SIZE, y))
+            self.fire_pits.append(Point(x_index*BLOCK, y))
 
-        x = BLOCK_SIZE * 8
+        x = BLOCK * 8
         for y_index in range(5, 10) :
-            self.fire_pits.append(Point(x, y_index*BLOCK_SIZE))
+            self.fire_pits.append(Point(x, y_index*BLOCK))
 
 
     
     #randomly places treasure at the start of the game
     def place_treasure(self):
-        self.treasure = Point(random.randint(0, 11) * BLOCK_SIZE,random.randint(0, 9) * BLOCK_SIZE)
+        self.treasure = Point(random.randint(0, 11) * BLOCK,random.randint(0, 9) * BLOCK)
         
         if(self.treasure == self.protagonist or self.treasure in self.fire_pits) :
             self.place_treasure()
@@ -87,13 +88,13 @@ class maze_game:
         x = self.protagonist.x
         y = self.protagonist.y
         if np.array_equal(action, [1,0,0,0]):
-            y -= BLOCK_SIZE
+            y = y - BLOCK
         elif np.array_equal(action, [0,1,0,0]):
-            x += BLOCK_SIZE
+            x = x + BLOCK
         elif np.array_equal(action, [0,0,1,0]):
-            y += BLOCK_SIZE
+            y = y + BLOCK
         elif np.array_equal(action, [0,0,0,1]):
-            x -= BLOCK_SIZE
+            x = x - BLOCK
         self.protagonist = Point(x,y)
         self.moves += 1
         
@@ -117,7 +118,7 @@ class maze_game:
 
         #update score and clock
         self.update()
-        self.clock.tick(60)
+        self.clock.tick(SPEED)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -131,7 +132,13 @@ class maze_game:
     def collision(self, pt = None):
         pt = self.protagonist
         #check if it hits the boundry
-        if pt.x > self.width - BLOCK_SIZE or pt.x < 0 or pt.y > self.height - BLOCK_SIZE or pt.y < 0:
+        if pt.x > self.width - BLOCK:
+            return True
+        elif pt.x < 0:
+            return True
+        elif pt.y > self.height - BLOCK:
+            return True
+        elif pt.y < 0:
             return True
 
         #check if it hits the fire pits
@@ -144,14 +151,12 @@ class maze_game:
         # set the backround
         self.display.fill((0,0,0))
         #draw the protagonist
-        #pygame.draw.rect(self.display, GREEN, pygame.Rect(self.protagonist.x, self.protagonist.y, BLOCK_SIZE, BLOCK_SIZE))
         self.display.blit(mario, (self.protagonist.x,self.protagonist.y))
         #draw treasure
-        #pygame.draw.rect(self.display, BLUE, pygame.Rect(self.treasure.x, self.treasure.y, BLOCK_SIZE, BLOCK_SIZE))
         self.display.blit(treasure, (self.treasure.x, self.treasure.y))
         #draw firepits
         for point in self.fire_pits:
-            #pygame.draw.rect(self.display, RED, pygame.Rect(point.x, point.y, BLOCK_SIZE, BLOCK_SIZE))
+            #pygame.draw.rect(self.display, RED, pygame.Rect(point.x, point.y, BLOCK, BLOCK))
             self.display.blit(fire, (point.x, point.y))
         #display information
         text = font.render('Moves: ' + str(self.moves) + ' Score: ' + str(self.score), True, (255,255,255))
