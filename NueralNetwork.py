@@ -48,6 +48,9 @@ class NeuralNetwork:
     def softmax(self, x):
         return np.exp(x) / sum(np.exp(x))
 
+    def get_no_of_hiddenlayers(self): 
+        return 1
+
     def forward_prop(self, input):
         self.inputs = input
         self.inputs = self.inputs.T

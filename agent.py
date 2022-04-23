@@ -13,15 +13,15 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 MEMORY_SIZE = 1000
 BATCH_SIZE = 100
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.001
 RANDOM_GAME_THRESHOLD = 200
 TRAINING_THRESHOLD = 0 # incease this if training is set 
 
 class Agent:
 
     def __init__(self) -> None:
-        #self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=256, activation='tanh')
-        self.model = NeuralNetwork2(lr= LEARNING_RATE, hidden_neuron=[256,128], activation='tanh')
+        self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=256, activation='tanh')
+        #self.model = NeuralNetwork2(lr= LEARNING_RATE, hidden_neuron=[256,128], activation='tanh')
         self.no_of_games = 0
         self.random_action_flag = 0 # controls the random behaviour
         self.gamma = 0.8 # discount rate
@@ -205,6 +205,8 @@ def start_training():
 
             if score >= max_score and agent.no_of_games > TRAINING_THRESHOLD:
                 max_score = score
+                global max_train
+                max_train = max_score
                 # saving the model which gets us the best performance
                 if agent.model.get_no_of_hiddenlayers() == 1:
                     w1 = agent.model.w1.copy()
@@ -223,6 +225,8 @@ def start_training():
             total_score += score
 
             avg_scores.append(total_score/agent.no_of_games)
+            global avg_train
+            avg_train = avg_scores[-1]
             plot(scores, avg_scores, 'AI TRAINING')
     
     if agent.model.get_no_of_hiddenlayers() == 1:
@@ -252,10 +256,21 @@ def start_test():
             scores.append(score)
             total_score += score
             plot(scores, [], 'AI Playing Using Fixed Model')
-    print(total_score/500)
+    global max_test, avg_test
+    max_test = max(scores)
+    avg_test = total_score/500
 
 if __name__ == '__main__':
+    max_test = 0
+    avg_test = 0
+    max_train = 0
+    avg_train = 0
     agent = Agent()
     game = maze_game()
     start_training()
     start_test()
+
+    print('max train = '+ str(max_train))
+    print('avg train = '+ str(avg_train))
+    print('max test = '+ str(max_test))
+    print('avg test = '+ str(avg_test))
