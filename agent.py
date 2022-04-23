@@ -206,10 +206,18 @@ def start_training():
             if score >= max_score and agent.no_of_games > TRAINING_THRESHOLD:
                 max_score = score
                 # saving the model which gets us the best performance
-                w1 = agent.model.w1.copy()
-                w2 = agent.model.w2.copy()
-                b1 = agent.model.b1.copy()
-                b2 = agent.model.b2.copy()
+                if agent.model.get_no_of_hiddenlayers() == 1:
+                    w1 = agent.model.w1.copy()
+                    w2 = agent.model.w2.copy()
+                    b1 = agent.model.b1.copy()
+                    b2 = agent.model.b2.copy()
+                else:
+                    w1 = agent.model.w1.copy()
+                    w2 = agent.model.w2.copy()
+                    w3 = agent.model.w3.copy()
+                    b1 = agent.model.b1.copy()
+                    b2 = agent.model.b2.copy()
+                    b3 = agent.model.b3.copy()
 
             scores.append(score)
             total_score += score
@@ -217,10 +225,18 @@ def start_training():
             avg_scores.append(total_score/agent.no_of_games)
             plot(scores, avg_scores, 'AI TRAINING')
     
-    agent.model.w1 = w1
-    agent.model.w2 = w2
-    agent.model.b1 = b1
-    agent.model.b2 = b2
+    if agent.model.get_no_of_hiddenlayers() == 1:
+        agent.model.w1 = w1
+        agent.model.w2 = w2
+        agent.model.b1 = b1
+        agent.model.b2 = b2
+    else:
+        agent.model.w1 = w1
+        agent.model.w2 = w2
+        agent.model.w3 = w3
+        agent.model.b1 = b1
+        agent.model.b2 = b2
+        agent.model.b3 = b3
 
 def start_test():
     scores = []
