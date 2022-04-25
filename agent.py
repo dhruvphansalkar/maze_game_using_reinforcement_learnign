@@ -11,17 +11,17 @@ from collections import deque
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
-MEMORY_SIZE = 1000
-BATCH_SIZE = 100
 LEARNING_RATE = 0.001
 RANDOM_GAME_THRESHOLD = 200
-TRAINING_THRESHOLD = 0 # incease this if training is set 
+TRAINING_THRESHOLD = 0 # incease this if training training high score is set very early on.
+HIDDEN_NEURONS = 256
+ACTIVATION = 'tanh'
 
 class Agent:
 
     def __init__(self) -> None:
-        self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=256, activation='tanh')
-        #self.model = NeuralNetwork2(lr= LEARNING_RATE, hidden_neuron=[256,128], activation='tanh')
+        self.model = NeuralNetwork(lr= LEARNING_RATE, hidden_neuron=HIDDEN_NEURONS, activation=ACTIVATION)
+        #self.model = NeuralNetwork2(lr= LEARNING_RATE, hidden_neuron=HIDDEN_NEURONS, activation=ACTIVATION)
         self.no_of_games = 0
         self.random_action_flag = 0 # controls the random behaviour
         self.gamma = 0.8 # discount rate
@@ -103,10 +103,10 @@ class Agent:
         """
         trains with all the past states and actions
         """ 
-        if len(self.memory) <= BATCH_SIZE:
+        if len(self.memory) <= 100:
             sample = self.memory
         else:
-            sample = random.sample(self.memory, BATCH_SIZE)
+            sample = random.sample(self.memory, 100)
         for i in range(len(sample)):
             state, action, reward, new_state, game_over = sample[i]
             self.trainer.training(state, action, reward, new_state, game_over)
@@ -116,7 +116,7 @@ class Agent:
          trains with the last states and action and stores result for LM_train
         """
         self.trainer.training(state, action, reward, new_state, game_over)
-        if len(self.memory) > MEMORY_SIZE:
+        if len(self.memory) > 1000:
             self.memory.popleft()
         self.memory.append((state, action, reward, new_state, game_over))
 
