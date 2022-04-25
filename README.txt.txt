@@ -7,7 +7,7 @@ Steps to run the code :
                 OR                            OR
           conda install pygame        conda install ipython
 4. Make sure to open the folder ML_Project containing the python code in your editor. When unzipping the folder, some times an ML_Project folder might be created inside another ML_Project folder.
-   opening the wrong ML_Project folder will result in misconfiguration of paths used to load resources for teh game.
+   opening the wrong ML_Project folder will result in misconfiguration of paths used to load resources for the game.
 5. to run the game, run the agent.py file.
 
 Steps to change the parameters :
